@@ -1,0 +1,15 @@
+/.idea
+/coverage
+/src
+/test
+
+.babelrc
+.eslintignore
+.eslintrc
+.gitignore
+.jshintignore
+.jshintrc
+.npmignore
+.nvmrc
+linters_entry_point.sh
+test_entry_point.sh

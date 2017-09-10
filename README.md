@@ -1,0 +1,1 @@
+# avroize-es6

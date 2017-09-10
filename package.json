@@ -1,0 +1,49 @@
+{
+  "name": "avroize-es6",
+  "version": "1.0.0",
+  "description": "avroize-es6",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "./node_modules/.bin/babel src --presets babel-preset-es2015 --out-dir dist",
+    "lint": "./lint.sh",
+    "prepublish": "npm run build",
+    "test": "./test.sh",
+    "validate": "npm ls"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/avroize/avroize-es6.git"
+  },
+  "author": "edgrams",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/avroize/avroize-es6/issues"
+  },
+  "homepage": "https://github.com/avroize/avroize-es6#readme",
+  "devDependencies": {
+    "babel-cli": "6.26.0",
+    "babel-jest": "21.0.2",
+    "babel-polyfill": "6.26.0",
+    "babel-preset-es2015": "6.24.1",
+    "eslint": "4.6.1",
+    "eslint-config-standard": "10.2.1",
+    "eslint-plugin-import": "2.7.0",
+    "eslint-plugin-node": "5.1.1",
+    "eslint-plugin-promise": "3.5.0",
+    "eslint-plugin-standard": "3.0.1",
+    "jest": "21.0.2",
+    "jest-cli": "21.0.2",
+    "jshint": "2.9.5",
+    "precommit-hook": "^3.0.0"
+  },
+  "pre-commit": [
+    "lint",
+    "test"
+  ]
+}
