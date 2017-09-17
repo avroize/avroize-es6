@@ -1,49 +1,50 @@
 
+import _ from "lodash";
 import AvroElement from "../../src/avro-objects/AvroElement";
 import AvroNode from "../../src/avro-objects/AvroNode";
 import Avroizer from "../../src/avroizer/Avroizer";
 import {avroTypes} from "../../src/constants/AvroTypes";
 
 const rootAvroSchema = {
-    default: "1",
-    name: "field1",
-    type: "string"
+    "default": "1",
+    "name": "field1",
+    "type": avroTypes.STRING
 };
 
 const level1AvroSchema = {
-    name: "level1",
-    type: "record",
-    fields:[{
-        default: "1",
-        name: "field1",
-        type: "string"
+    "name": "level1",
+    "type": avroTypes.RECORD,
+    "fields":[{
+        "default": "1",
+        "name": "field1",
+        "type": avroTypes.STRING
     },{
-        default: 2,
-        name: "field2",
-        type: "int"
+        "default": 2,
+        "name": "field2",
+        "type": avroTypes.INTEGER
     }]
 };
 
 const level2AvroSchema = {
-    name: "level1",
-    type: "record",
-    fields:[{
-        default: 1,
-        name: "field1",
-        type: "int"
+    "name": "level1",
+    "type": avroTypes.RECORD,
+    "fields":[{
+        "default": 1,
+        "name": "field1",
+        "type": avroTypes.INTEGER
     },{
-        name: "level2",
-        type: {
-            name: "level2_data",
-            type: "record",
-            fields:[{
-                default: 2,
-                name: "field2",
-                type: "int"
+        "name": "level2",
+        "type": {
+            "name": "level2_data",
+            "type": avroTypes.RECORD,
+            "fields":[{
+                "default": 2,
+                "name": "field2",
+                "type": avroTypes.INTEGER
             },{
-                default: "3",
-                name: "field3",
-                type: "string"
+                "default": "3",
+                "name": "field3",
+                "type": avroTypes.STRING
             }]
         }
     }]
@@ -52,15 +53,45 @@ const level2AvroSchema = {
 let expected, result;
 
 describe("Avroizer", () => {
+    test("get avroElements returns createAvroElement value", () => {
+        result = new Avroizer(rootAvroSchema, null);
+
+        expect(result.avroElements).toEqual(Avroizer.createAvroElement(rootAvroSchema, [], []));
+    });
+
     describe("avroize", () => {
+        test("cloneDeep from lodash", () => {
+            const avroizer = new Avroizer(rootAvroSchema, null);
+            const cloneDeepSpy = jest.spyOn(_, "cloneDeep");
+
+            avroizer.avroize({});
+
+            expect(cloneDeepSpy).toHaveBeenCalled();
+        });
+
+        test("accept each visitor", () => {
+            const visitor = {
+                visit: () => {
+                    return undefined;
+                }
+            };
+            const visitors = [visitor, visitor];
+            const avroizer = new Avroizer(rootAvroSchema, visitors);
+            const data = {};
+            const acceptSpy = jest.spyOn(avroizer.avroElements[0], "accept");
+
+            avroizer.avroize(data);
+
+            expect(acceptSpy).toHaveBeenCalledWith(visitor, data);
+            expect(acceptSpy.mock.calls.length).toEqual(2);
+        });
+
         describe("root level", () => {
             test("empty data object", () => {
                 const avroizer = new Avroizer(rootAvroSchema, null);
 
                 result = avroizer.avroize({});
-                expected = {
-                    field1: ""
-                };
+                expected = "";
 
                 expect(result).toEqual(expected);
             });

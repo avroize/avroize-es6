@@ -46,5 +46,8 @@
   "pre-commit": [
     "lint",
     "test"
-  ]
+  ],
+  "dependencies": {
+    "lodash": "^4.17.4"
+  }
 }

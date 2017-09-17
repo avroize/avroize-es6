@@ -1,12 +1,17 @@
 
+import _ from "lodash";
 import AvroElement from "../avro-objects/AvroElement";
 import AvroNode from "../avro-objects/AvroNode";
 import * as utilities from "../utilities";
 
 export default class Avroizer {
     constructor(avroSchema, visitors) {
-        this.avroElements = Avroizer.createAvroElement(avroSchema, [], []);
+        this._avroElements = Avroizer.createAvroElement(avroSchema, [], []);
         this.visitors = visitors;
+    }
+
+    get avroElements() {
+        return this._avroElements;
     }
 
     avroize(data) {
@@ -15,12 +20,25 @@ export default class Avroizer {
         // other visitors can determine the default behavior (e.g. use the default values or null types)
         // iterate avroElements, accepting all the registered visitors for each
 
-        const avroizedData = {};
+        // clone avro elements to get a clean default tree
+        const cleanAvroElements = _.cloneDeep(this.avroElements);
 
-        this.avroElements.forEach((avroElement) => {
+        let avroizedData = {};
+
+        cleanAvroElements.forEach((avroElement) => {
+            if (utilities.isDefined(this.visitors)) {
+                // each visitor will be applied in order
+                this.visitors.forEach((visitor) => {
+                    avroElement.accept(visitor, data);
+                });
+            }
+
             const parentNodeLength = avroElement.parentNodes.length;
-            if (parentNodeLength === 0 || parentNodeLength === 1) {
-                // this is the root node
+            if (parentNodeLength === 0) {
+                // this is a schema with a primitive root
+                avroizedData = avroElement.value;
+            } else if (parentNodeLength === 1) {
+                // this is a schema with an object root
                 avroizedData[avroElement.name] = avroElement.value;
             } else {
                 let latestNode = avroizedData;
@@ -58,8 +76,7 @@ export default class Avroizer {
 
             return accumulator;
         } else {
-            const avroElement = new AvroElement(avroJSON.name, avroJSON.type,
-                avroJSON.default, parentNodes);
+            const avroElement = new AvroElement(avroJSON.name, avroJSON.type, avroJSON.default, parentNodes);
             accumulator.push(avroElement);
             return accumulator;
         }

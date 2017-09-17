@@ -1,6 +1,6 @@
 
 function isDefined(value) {
-    return typeof value !== "undefined";
+    return typeof value !== "undefined" && value !== null;
 }
 
 function isObject(value) {

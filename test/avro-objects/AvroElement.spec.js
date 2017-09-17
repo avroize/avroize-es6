@@ -41,16 +41,17 @@ describe("AvroElement", () => {
     describe("accept", () => {
         test("should request visit from visitor param", () => {
             const avroElement = new AvroElement("root", avroTypes.STRING, "1", null);
+            const data = {};
             const visitor = {
-                visit: function () {
+                visit: () => {
                     return undefined;
                 }
             };
             const visitSpy = jest.spyOn(visitor, "visit");
 
-            avroElement.accept(visitor);
+            avroElement.accept(visitor, data);
 
-            expect(visitSpy).toHaveBeenCalledWith(avroElement);
+            expect(visitSpy).toHaveBeenCalledWith(avroElement, data);
         });
     });
 

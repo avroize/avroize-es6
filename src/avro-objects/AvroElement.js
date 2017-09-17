@@ -30,8 +30,8 @@ export default class AvroElement {
         return this._value;
     }
 
-    accept(visitor) {
-        visitor.visit(this);
+    accept(visitor, data) {
+        visitor.visit(this, data);
     }
 
     static getDefaultValueForAvroType(avroType) {
