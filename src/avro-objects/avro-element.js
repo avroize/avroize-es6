@@ -1,5 +1,5 @@
 
-import {avroTypes} from "../constants/AvroTypes";
+import {getDefaultValueForAvroType} from "../utilities";
 
 export default class AvroElement {
     constructor(name, dataType, defaultValue, parentNodes) {
@@ -7,7 +7,7 @@ export default class AvroElement {
         this._dataType = dataType;
         this._defaultValue = defaultValue;
         this._parentNodes = parentNodes;
-        this._value = AvroElement.getDefaultValueForAvroType(dataType);
+        this._value = getDefaultValueForAvroType(dataType);
     }
 
     get dataType() {
@@ -32,22 +32,5 @@ export default class AvroElement {
 
     accept(visitor, data) {
         visitor.visit(this, data);
-    }
-
-    static getDefaultValueForAvroType(avroType) {
-        let defaultValue;
-
-        switch(avroType) {
-            case avroTypes.STRING:
-                defaultValue = "";
-                break;
-            case avroTypes.INTEGER:
-                defaultValue = 0;
-                break;
-            default:
-                defaultValue = undefined;
-        }
-
-        return defaultValue;
     }
 }

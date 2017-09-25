@@ -14,7 +14,8 @@
     "collectCoverage": true,
     "collectCoverageFrom": [
       "src/**/*.js"
-    ]
+    ],
+    "testRegex": "\\.spec|integration\\.js$"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,7 @@
   },
   "homepage": "https://github.com/avroize/avroize-es6#readme",
   "devDependencies": {
+    "avsc": "^5.0.6",
     "babel-cli": "6.26.0",
     "babel-jest": "21.0.2",
     "babel-polyfill": "6.26.0",

@@ -1,5 +1,5 @@
 
-import AvroNode from "../../src/avro-objects/AvroNode";
+import AvroNode from "../../src/avro-objects/avro-node";
 
 let result;
 

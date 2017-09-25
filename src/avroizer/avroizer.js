@@ -1,17 +1,21 @@
 
 import _ from "lodash";
-import AvroElement from "../avro-objects/AvroElement";
-import AvroNode from "../avro-objects/AvroNode";
+import AvroElement from "../avro-objects/avro-element";
+import AvroNode from "../avro-objects/avro-node";
 import * as utilities from "../utilities";
 
 export default class Avroizer {
     constructor(avroSchema, visitors) {
         this._avroElements = Avroizer.createAvroElement(avroSchema, [], []);
-        this.visitors = visitors;
+        this._visitors = visitors;
     }
 
     get avroElements() {
         return this._avroElements;
+    }
+
+    get visitors() {
+        return this._visitors;
     }
 
     avroize(data) {

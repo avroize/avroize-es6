@@ -1,7 +1,10 @@
 
-import AvroElement from "../../src/avro-objects/AvroElement";
-import AvroNode from "../../src/avro-objects/AvroNode";
-import {avroTypes} from "../../src/constants/AvroTypes";
+jest.mock("../../src/utilities");
+
+import AvroElement from "../../src/avro-objects/avro-element";
+import AvroNode from "../../src/avro-objects/avro-node";
+import {avroTypes} from "../../src/constants/avro-types";
+import {getDefaultValueForAvroType} from "../../src/utilities";
 
 let result;
 
@@ -31,10 +34,10 @@ describe("AvroElement", () => {
             expect(result.parentNodes).toEqual(new AvroNode("root", null, false));
         });
 
-        test("get value returns getDefaultValueForAvroType value", () => {
+        test("getDefaultValueForAvroType from utilities", () => {
             result = new AvroElement(null, avroTypes.STRING, null, null);
 
-            expect(result.value).toEqual(AvroElement.getDefaultValueForAvroType(avroTypes.STRING));
+            expect(getDefaultValueForAvroType).toHaveBeenCalledWith(avroTypes.STRING);
         });
     });
 
@@ -52,26 +55,6 @@ describe("AvroElement", () => {
             avroElement.accept(visitor, data);
 
             expect(visitSpy).toHaveBeenCalledWith(avroElement, data);
-        });
-    });
-
-    describe("getDefaultValueForAvroType", () => {
-        test("string avro type returns empty string", () => {
-            result = AvroElement.getDefaultValueForAvroType(avroTypes.STRING);
-
-            expect(result).toEqual("");
-        });
-
-        test("integer avro type returns zero", () => {
-            result = AvroElement.getDefaultValueForAvroType(avroTypes.INTEGER);
-
-            expect(result).toEqual(0);
-        });
-
-        test("default returns undefined", () => {
-            result = AvroElement.getDefaultValueForAvroType(null);
-
-            expect(result).toBeUndefined();
         });
     });
 });

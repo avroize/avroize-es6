@@ -1,9 +1,9 @@
 
 import _ from "lodash";
-import AvroElement from "../../src/avro-objects/AvroElement";
-import AvroNode from "../../src/avro-objects/AvroNode";
-import Avroizer from "../../src/avroizer/Avroizer";
-import {avroTypes} from "../../src/constants/AvroTypes";
+import AvroElement from "../../src/avro-objects/avro-element";
+import AvroNode from "../../src/avro-objects/avro-node";
+import Avroizer from "../../src/avroizer/avroizer";
+import {avroTypes} from "../../src/constants/avro-types";
 
 const rootAvroSchema = {
     "default": "1",
@@ -53,10 +53,20 @@ const level2AvroSchema = {
 let expected, result;
 
 describe("Avroizer", () => {
-    test("get avroElements returns createAvroElement value", () => {
-        result = new Avroizer(rootAvroSchema, null);
+    describe("constructor", () => {
+        test("get avroElements returns createAvroElement value", () => {
+            result = new Avroizer(rootAvroSchema, null);
 
-        expect(result.avroElements).toEqual(Avroizer.createAvroElement(rootAvroSchema, [], []));
+            expect(result.avroElements).toEqual(Avroizer.createAvroElement(rootAvroSchema, [], []));
+        });
+
+        test("visitors", () => {
+            const visitors = [];
+
+            result = new Avroizer({}, visitors);
+
+            expect(result.visitors).toBe(visitors);
+        });
     });
 
     describe("avroize", () => {
