@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/avroize/avroize-es6#readme",
   "devDependencies": {
-    "avsc": "^5.0.6",
+    "avsc": "3.4.2",
     "babel-cli": "6.26.0",
     "babel-jest": "21.0.2",
     "babel-polyfill": "6.26.0",
@@ -43,7 +43,7 @@
     "jest": "21.0.2",
     "jest-cli": "21.0.2",
     "jshint": "2.9.5",
-    "precommit-hook": "^3.0.0"
+    "precommit-hook": "3.0.0"
   },
   "pre-commit": [
     "lint",

@@ -1,21 +1,22 @@
 
 import sanitize from "../avro-sanitizer";
 import * as utilities from "../utilities";
-import {avroTypes} from "../constants/avro-types";
+import avroTypes from "../constants/avro-types";
 
 export default class JSONVisitor {
     visit(avroElement, data) {
         if (avroElement.dataType !== avroTypes.RECORD) {
             if (avroElement.parentNodes.length === 0) {
                 // this is a single field schema
-                avroElement._value = sanitize(avroElement.dataType, data);
+                avroElement._value = sanitize(avroElement.dataType, avroElement.isNullable, data);
             } else {
                 // shift the root node and copy parents
                 const parentNodes = avroElement.parentNodes.slice(1, avroElement.parentNodes.length);
 
                 const currentObject = JSONVisitor.getCurrentObject(parentNodes, data);
                 if (utilities.isObject(currentObject) && utilities.isDefined(currentObject[avroElement.name])) {
-                    avroElement._value = sanitize(avroElement.dataType, currentObject[avroElement.name]);
+                    avroElement._value = sanitize(avroElement.dataType, avroElement.isNullable,
+                        currentObject[avroElement.name]);
                 }
             }
         }

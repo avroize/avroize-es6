@@ -80,7 +80,18 @@ export default class Avroizer {
 
             return accumulator;
         } else {
-            const avroElement = new AvroElement(avroJSON.name, avroJSON.type, avroJSON.default, parentNodes);
+            let avroElement;
+
+            if (utilities.isArray(avroJSON.type)) {
+                // for MVP, assume that anything that is an array is a union with a nullable type
+                // also assume first element is null, and the second element is the type
+                // safety checks later :)
+
+                avroElement = new AvroElement(avroJSON.name, avroJSON.type[1], true, avroJSON.default, parentNodes);
+            } else {
+                avroElement = new AvroElement(avroJSON.name, avroJSON.type, false, avroJSON.default, parentNodes);
+            }
+
             accumulator.push(avroElement);
             return accumulator;
         }

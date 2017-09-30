@@ -2,12 +2,13 @@
 import {getDefaultValueForAvroType} from "../utilities";
 
 export default class AvroElement {
-    constructor(name, dataType, defaultValue, parentNodes) {
+    constructor(name, dataType, isNullable, defaultValue, parentNodes) {
         this._name = name;
         this._dataType = dataType;
         this._defaultValue = defaultValue;
+        this._isNullable = isNullable;
         this._parentNodes = parentNodes;
-        this._value = getDefaultValueForAvroType(dataType);
+        this._value = (isNullable) ? null : getDefaultValueForAvroType(dataType, isNullable);
     }
 
     get dataType() {
@@ -16,6 +17,10 @@ export default class AvroElement {
 
     get defaultValue() {
         return this._defaultValue;
+    }
+
+    get isNullable() {
+        return this._isNullable;
     }
 
     get name() {

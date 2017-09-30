@@ -3,7 +3,7 @@ import _ from "lodash";
 import AvroElement from "../../src/avro-objects/avro-element";
 import AvroNode from "../../src/avro-objects/avro-node";
 import Avroizer from "../../src/avroizer/avroizer";
-import {avroTypes} from "../../src/constants/avro-types";
+import avroTypes from "../../src/constants/avro-types";
 
 const rootAvroSchema = {
     "default": "1",
@@ -15,13 +15,29 @@ const level1AvroSchema = {
     "name": "level1",
     "type": avroTypes.RECORD,
     "fields":[{
-        "default": "1",
+        "default": null,
         "name": "field1",
-        "type": avroTypes.STRING
+        "type": [avroTypes.NULL, avroTypes.STRING]
     },{
         "default": 2,
         "name": "field2",
         "type": avroTypes.INTEGER
+    },{
+        "default": true,
+        "name": "field3",
+        "type": avroTypes.BOOLEAN
+    },{
+        "default": null,
+        "name": "field4",
+        "type": [avroTypes.NULL, avroTypes.DOUBLE]
+    },{
+        "default": 10000,
+        "name": "field5",
+        "type": avroTypes.LONG
+    },{
+        "default": 1.1,
+        "name": "field6",
+        "type": avroTypes.FLOAT
     }]
 };
 
@@ -29,22 +45,34 @@ const level2AvroSchema = {
     "name": "level1",
     "type": avroTypes.RECORD,
     "fields":[{
-        "default": 1,
+        "default": 1.1,
         "name": "field1",
-        "type": avroTypes.INTEGER
+        "type": avroTypes.DOUBLE
+    },{
+        "default": null,
+        "name": "field2",
+        "type": ["null", avroTypes.LONG]
     },{
         "name": "level2",
         "type": {
             "name": "level2_data",
             "type": avroTypes.RECORD,
             "fields":[{
-                "default": 2,
-                "name": "field2",
-                "type": avroTypes.INTEGER
-            },{
-                "default": "3",
+                "default": null,
                 "name": "field3",
+                "type": [avroTypes.NULL, avroTypes.FLOAT]
+            },{
+                "default": "4",
+                "name": "field4",
                 "type": avroTypes.STRING
+            },{
+                "default": null,
+                "name": "field5",
+                "type": [avroTypes.NULL, avroTypes.BOOLEAN]
+            },{
+                "default": null,
+                "name": "field6",
+                "type": [avroTypes.NULL, avroTypes.INTEGER]
             }]
         }
     }]
@@ -113,8 +141,12 @@ describe("Avroizer", () => {
 
                 result = avroizer.avroize({});
                 expected = {
-                    field1: "",
-                    field2: 0
+                    field1: null,
+                    field2: 0,
+                    field3: false,
+                    field4: null,
+                    field5: 0,
+                    field6: 0
                 };
 
                 expect(result).toEqual(expected);
@@ -128,9 +160,12 @@ describe("Avroizer", () => {
                 result = avroizer.avroize({});
                 expected = {
                     field1: 0,
+                    field2: null,
                     level2: {
-                        field2: 0,
-                        field3: ""
+                        field3: null,
+                        field4: "",
+                        field5: null,
+                        field6: null
                     }
                 };
 
@@ -141,9 +176,9 @@ describe("Avroizer", () => {
 
     describe("createAvroElement", () => {
         describe("root level", () => {
-            test("element 1 that is not a record", () => {
+            test("element 1 root level", () => {
                 result = Avroizer.createAvroElement(rootAvroSchema, [], []);
-                expected = new AvroElement("field1", "string", "1", []);
+                expected = new AvroElement("field1", "string", false, "1", []);
 
                 expect(result[0]).toEqual(expected);
             });
@@ -159,23 +194,55 @@ describe("Avroizer", () => {
             test("expected number of elements", () => {
                 result = Avroizer.createAvroElement(level1AvroSchema, [], []);
 
-                expect(result.length).toEqual(2);
+                expect(result.length).toEqual(6);
             });
 
-            test("element 1 that is not a record", () => {
+            test("element 1 level 1", () => {
                 result = Avroizer.createAvroElement(level1AvroSchema, [], []);
-                expected = new AvroElement("field1", "string", "1",
+                expected = new AvroElement("field1", "string", true, null,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[0]).toEqual(expected);
             });
 
-            test("element 2 that is not a record", () => {
+            test("element 2 level 1", () => {
                 result = Avroizer.createAvroElement(level1AvroSchema, [], []);
-                expected = new AvroElement("field2", "int", 2,
+                expected = new AvroElement("field2", "int", false, 2,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[1]).toEqual(expected);
+            });
+
+            test("element 3 level 1", () => {
+                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field3", "boolean", false, true,
+                    [new AvroNode("level1", null, false)]);
+
+                expect(result[2]).toEqual(expected);
+            });
+
+            test("element 4 level 1", () => {
+                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field4", "double", true, null,
+                    [new AvroNode("level1", null, false)]);
+
+                expect(result[3]).toEqual(expected);
+            });
+
+            test("element 5 level 1", () => {
+                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field5", "long", false, 10000,
+                    [new AvroNode("level1", null, false)]);
+
+                expect(result[4]).toEqual(expected);
+            });
+
+            test("element 6 level 1", () => {
+                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field6", "float", false, 1.1,
+                    [new AvroNode("level1", null, false)]);
+
+                expect(result[5]).toEqual(expected);
             });
         });
 
@@ -183,35 +250,63 @@ describe("Avroizer", () => {
             test("expected number of elements", () => {
                 result = Avroizer.createAvroElement(level2AvroSchema, [], []);
 
-                expect(result.length).toEqual(3);
+                expect(result.length).toEqual(6);
             });
 
-            test("element 1 that is not a record", () => {
+            test("element 1 level 1", () => {
                 result = Avroizer.createAvroElement(level2AvroSchema, [], []);
-                expected = new AvroElement("field1", "int", 1,
+                expected = new AvroElement("field1", "double", false, 1.1,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[0]).toEqual(expected);
             });
 
-            test("element 2 that is not a record", () => {
+            test("element 2 level 1", () => {
                 result = Avroizer.createAvroElement(level2AvroSchema, [], []);
-                expected = new AvroElement("field2", "int", 2, [
-                    new AvroNode("level1", null, false),
-                    new AvroNode("level2", "level2_data", false)
-                ]);
+                expected = new AvroElement("field2", "long", true, null,
+                    [new AvroNode("level1", null, false)]);
 
                 expect(result[1]).toEqual(expected);
             });
 
-            test("element 3 that is not a record", () => {
+            test("element 3 level 2", () => {
                 result = Avroizer.createAvroElement(level2AvroSchema, [], []);
-                expected = new AvroElement("field3", "string", "3", [
+                expected = new AvroElement("field3", "float", true, null, [
                     new AvroNode("level1", null, false),
                     new AvroNode("level2", "level2_data", false)
                 ]);
 
                 expect(result[2]).toEqual(expected);
+            });
+
+            test("element 4 level 2", () => {
+                result = Avroizer.createAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("field4", "string", false, "4", [
+                    new AvroNode("level1", null, false),
+                    new AvroNode("level2", "level2_data", false)
+                ]);
+
+                expect(result[3]).toEqual(expected);
+            });
+
+            test("element 5 level 2", () => {
+                result = Avroizer.createAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("field5", "boolean", true, null, [
+                    new AvroNode("level1", null, false),
+                    new AvroNode("level2", "level2_data", false)
+                ]);
+
+                expect(result[4]).toEqual(expected);
+            });
+
+            test("element 6 level 2", () => {
+                result = Avroizer.createAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("field6", "int", true, null, [
+                    new AvroNode("level1", null, false),
+                    new AvroNode("level2", "level2_data", false)
+                ]);
+
+                expect(result[5]).toEqual(expected);
             });
         });
     });
