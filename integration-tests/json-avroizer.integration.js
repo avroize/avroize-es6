@@ -36,6 +36,13 @@ const level1AvroSchema = {
         "default": 1.1,
         "name": "field6",
         "type": avroTypes.FLOAT
+    },{
+        "default": null,
+        "name": "field7",
+        "type": [avroTypes.NULL, {
+            "type": avroTypes.ARRAY,
+            "items": avroTypes.DOUBLE
+        }]
     }]
 };
 
@@ -71,6 +78,13 @@ const level2AvroSchema = {
                 "default": null,
                 "name": "field6",
                 "type": [avroTypes.NULL, avroTypes.INTEGER]
+            },{
+                "default": [],
+                "name": "field7",
+                "type": {
+                    "type": avroTypes.ARRAY,
+                    "items": avroTypes.FLOAT
+                }
             }]
         }
     }]
@@ -113,6 +127,13 @@ const level3AvroSchema = {
                         "default": 1.1,
                         "name": "field6",
                         "type": avroTypes.FLOAT
+                    },{
+                        "default": [],
+                        "name": "field7",
+                        "type": {
+                            "type": avroTypes.ARRAY,
+                            "items": avroTypes.BOOLEAN
+                        }
                     }]
                 }
             }]
@@ -145,7 +166,8 @@ describe("JSONAvroizer", () => {
                field1: { string: "1" },
                field3: true,
                field4: null,
-               field6: 1.1
+               field6: 1.1,
+               field7: { array: [1.1] }
            };
 
            result = avroizer.avroize(data);
@@ -157,7 +179,8 @@ describe("JSONAvroizer", () => {
                field3: true,
                field4: null,
                field5: 0,
-               field6: 1.1
+               field6: 1.1,
+               field7: { array: [1.1] }
            };
            expect(result).toEqual(expected);
            expect(isValid).toBeTruthy();
@@ -184,7 +207,8 @@ describe("JSONAvroizer", () => {
                    field3: { float: 1.1 },
                    field4: "",
                    field5: null,
-                   field6: { int: 1 }
+                   field6: { int: 1 },
+                   field7: []
                }
            };
            expect(result).toEqual(expected);
@@ -199,7 +223,8 @@ describe("JSONAvroizer", () => {
                level2: {
                    field4: 10000,
                    level3: {
-                       field6: 1.1
+                       field6: 1.1,
+                       field7: [true, false]
                    }
                }
            };
@@ -215,7 +240,8 @@ describe("JSONAvroizer", () => {
                    field4: 10000,
                    level3: {
                        field5: null,
-                       field6: 1.1
+                       field6: 1.1,
+                       field7: [true, false]
                    }
                }
            };

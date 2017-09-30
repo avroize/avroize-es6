@@ -2,11 +2,12 @@
 import _ from "lodash";
 import AvroElement from "../avro-objects/avro-element";
 import AvroNode from "../avro-objects/avro-node";
+import avroTypes from "../constants/avro-types";
 import * as utilities from "../utilities";
 
 export default class Avroizer {
     constructor(avroSchema, visitors) {
-        this._avroElements = Avroizer.createAvroElement(avroSchema, [], []);
+        this._avroElements = Avroizer.getAvroElement(avroSchema, [], []);
         this._visitors = visitors;
     }
 
@@ -61,11 +62,19 @@ export default class Avroizer {
         return avroizedData;
     }
 
-    static createAvroElement(avroJSON, parentNodes, accumulator, nodeName) {
+    static getAvroElement(avroJSON, parentNodes, accumulator, nodeName) {
         if (utilities.isObject(avroJSON.type)) {
-            // this is a record node with a data node
-            return Avroizer.createAvroElement(avroJSON.type, parentNodes, accumulator, avroJSON.name);
-        } else if (avroJSON.type === "record") {
+            if (avroJSON.type.type === avroTypes.ARRAY) {
+                // is an array, assume primitive type for now
+                const avroElement = new AvroElement(avroJSON.name, avroJSON.type.items, false, true, avroJSON.default,
+                    parentNodes);
+                accumulator.push(avroElement);
+                return accumulator;
+            } else {
+                // this is a record node with a data node
+                return Avroizer.getAvroElement(avroJSON.type, parentNodes, accumulator, avroJSON.name);
+            }
+        } else if (avroJSON.type === avroTypes.RECORD) {
             let parentNode;
             if (utilities.isDefined(nodeName)) {
                 parentNode = new AvroNode(nodeName, avroJSON.name, false);
@@ -75,7 +84,7 @@ export default class Avroizer {
 
             const newParentNodes = parentNodes.concat([parentNode]);
             avroJSON.fields.forEach((field) => {
-                Avroizer.createAvroElement(field, newParentNodes, accumulator);
+                Avroizer.getAvroElement(field, newParentNodes, accumulator);
             });
 
             return accumulator;
@@ -87,9 +96,13 @@ export default class Avroizer {
                 // also assume first element is null, and the second element is the type
                 // safety checks later :)
 
-                avroElement = new AvroElement(avroJSON.name, avroJSON.type[1], true, avroJSON.default, parentNodes);
+                const isArray = utilities.isObject(avroJSON.type[1]);
+                const type = isArray ? avroJSON.type[1].items : avroJSON.type[1];
+                avroElement = new AvroElement(avroJSON.name, type, true, isArray, avroJSON.default,
+                    parentNodes);
             } else {
-                avroElement = new AvroElement(avroJSON.name, avroJSON.type, false, avroJSON.default, parentNodes);
+                avroElement = new AvroElement(avroJSON.name, avroJSON.type, false, false, avroJSON.default,
+                    parentNodes);
             }
 
             accumulator.push(avroElement);

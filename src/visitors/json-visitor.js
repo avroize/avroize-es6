@@ -8,7 +8,8 @@ export default class JSONVisitor {
         if (avroElement.dataType !== avroTypes.RECORD) {
             if (avroElement.parentNodes.length === 0) {
                 // this is a single field schema
-                avroElement._value = sanitize(avroElement.dataType, avroElement.isNullable, data);
+                avroElement._value = sanitize(avroElement.dataType, avroElement.isNullable,
+                    avroElement.isArray, data);
             } else {
                 // shift the root node and copy parents
                 const parentNodes = avroElement.parentNodes.slice(1, avroElement.parentNodes.length);
@@ -16,7 +17,7 @@ export default class JSONVisitor {
                 const currentObject = JSONVisitor.getCurrentObject(parentNodes, data);
                 if (utilities.isObject(currentObject) && utilities.isDefined(currentObject[avroElement.name])) {
                     avroElement._value = sanitize(avroElement.dataType, avroElement.isNullable,
-                        currentObject[avroElement.name]);
+                        avroElement.isArray, currentObject[avroElement.name]);
                 }
             }
         }

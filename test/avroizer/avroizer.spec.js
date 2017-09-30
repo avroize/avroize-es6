@@ -38,6 +38,13 @@ const level1AvroSchema = {
         "default": 1.1,
         "name": "field6",
         "type": avroTypes.FLOAT
+    },{
+        "default": null,
+        "name": "field7",
+        "type": [avroTypes.NULL, {
+            "type": avroTypes.ARRAY,
+            "items": avroTypes.DOUBLE
+        }]
     }]
 };
 
@@ -73,6 +80,13 @@ const level2AvroSchema = {
                 "default": null,
                 "name": "field6",
                 "type": [avroTypes.NULL, avroTypes.INTEGER]
+            },{
+                "default": [],
+                "name": "field7",
+                "type": {
+                    "type": avroTypes.ARRAY,
+                    "items": avroTypes.LONG
+                }
             }]
         }
     }]
@@ -85,7 +99,7 @@ describe("Avroizer", () => {
         test("get avroElements returns createAvroElement value", () => {
             result = new Avroizer(rootAvroSchema, null);
 
-            expect(result.avroElements).toEqual(Avroizer.createAvroElement(rootAvroSchema, [], []));
+            expect(result.avroElements).toEqual(Avroizer.getAvroElement(rootAvroSchema, [], []));
         });
 
         test("visitors", () => {
@@ -121,7 +135,7 @@ describe("Avroizer", () => {
             avroizer.avroize(data);
 
             expect(acceptSpy).toHaveBeenCalledWith(visitor, data);
-            expect(acceptSpy.mock.calls.length).toEqual(2);
+            expect(acceptSpy.mock.calls).toHaveLength(2);
         });
 
         describe("root level", () => {
@@ -146,7 +160,8 @@ describe("Avroizer", () => {
                     field3: false,
                     field4: null,
                     field5: 0,
-                    field6: 0
+                    field6: 0,
+                    field7: null
                 };
 
                 expect(result).toEqual(expected);
@@ -165,7 +180,8 @@ describe("Avroizer", () => {
                         field3: null,
                         field4: "",
                         field5: null,
-                        field6: null
+                        field6: null,
+                        field7: []
                     }
                 };
 
@@ -174,104 +190,112 @@ describe("Avroizer", () => {
         });
     });
 
-    describe("createAvroElement", () => {
+    describe("getAvroElement", () => {
         describe("root level", () => {
             test("element 1 root level", () => {
-                result = Avroizer.createAvroElement(rootAvroSchema, [], []);
-                expected = new AvroElement("field1", "string", false, "1", []);
+                result = Avroizer.getAvroElement(rootAvroSchema, [], []);
+                expected = new AvroElement("field1", "string", false, false, "1", []);
 
                 expect(result[0]).toEqual(expected);
             });
 
             test("expected number of elements", () => {
-                result = Avroizer.createAvroElement(rootAvroSchema, [], []);
+                result = Avroizer.getAvroElement(rootAvroSchema, [], []);
 
-                expect(result.length).toEqual(1);
+                expect(result).toHaveLength(1);
             });
         });
 
         describe("one level nesting", () => {
             test("expected number of elements", () => {
-                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
+                result = Avroizer.getAvroElement(level1AvroSchema, [], []);
 
-                expect(result.length).toEqual(6);
+                expect(result).toHaveLength(7);
             });
 
             test("element 1 level 1", () => {
-                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
-                expected = new AvroElement("field1", "string", true, null,
+                result = Avroizer.getAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field1", "string", true, false, null,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[0]).toEqual(expected);
             });
 
             test("element 2 level 1", () => {
-                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
-                expected = new AvroElement("field2", "int", false, 2,
+                result = Avroizer.getAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field2", "int", false, false, 2,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[1]).toEqual(expected);
             });
 
             test("element 3 level 1", () => {
-                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
-                expected = new AvroElement("field3", "boolean", false, true,
+                result = Avroizer.getAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field3", "boolean", false, false, true,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[2]).toEqual(expected);
             });
 
             test("element 4 level 1", () => {
-                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
-                expected = new AvroElement("field4", "double", true, null,
+                result = Avroizer.getAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field4", "double", true, false, null,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[3]).toEqual(expected);
             });
 
             test("element 5 level 1", () => {
-                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
-                expected = new AvroElement("field5", "long", false, 10000,
+                result = Avroizer.getAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field5", "long", false, false, 10000,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[4]).toEqual(expected);
             });
 
             test("element 6 level 1", () => {
-                result = Avroizer.createAvroElement(level1AvroSchema, [], []);
-                expected = new AvroElement("field6", "float", false, 1.1,
+                result = Avroizer.getAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field6", "float", false, false, 1.1,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[5]).toEqual(expected);
+            });
+
+            test("element 7 level 1", () => {
+                result = Avroizer.getAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("field7", "double", true, true, null,
+                    [new AvroNode("level1", null, false)]);
+
+                expect(result[6]).toEqual(expected);
             });
         });
 
         describe("multi-level nesting", () => {
             test("expected number of elements", () => {
-                result = Avroizer.createAvroElement(level2AvroSchema, [], []);
+                result = Avroizer.getAvroElement(level2AvroSchema, [], []);
 
-                expect(result.length).toEqual(6);
+                expect(result).toHaveLength(7);
             });
 
             test("element 1 level 1", () => {
-                result = Avroizer.createAvroElement(level2AvroSchema, [], []);
-                expected = new AvroElement("field1", "double", false, 1.1,
+                result = Avroizer.getAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("field1", "double", false, false, 1.1,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[0]).toEqual(expected);
             });
 
             test("element 2 level 1", () => {
-                result = Avroizer.createAvroElement(level2AvroSchema, [], []);
-                expected = new AvroElement("field2", "long", true, null,
+                result = Avroizer.getAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("field2", "long", true, false, null,
                     [new AvroNode("level1", null, false)]);
 
                 expect(result[1]).toEqual(expected);
             });
 
             test("element 3 level 2", () => {
-                result = Avroizer.createAvroElement(level2AvroSchema, [], []);
-                expected = new AvroElement("field3", "float", true, null, [
+                result = Avroizer.getAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("field3", "float", true, false, null, [
                     new AvroNode("level1", null, false),
                     new AvroNode("level2", "level2_data", false)
                 ]);
@@ -280,8 +304,8 @@ describe("Avroizer", () => {
             });
 
             test("element 4 level 2", () => {
-                result = Avroizer.createAvroElement(level2AvroSchema, [], []);
-                expected = new AvroElement("field4", "string", false, "4", [
+                result = Avroizer.getAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("field4", "string", false, false, "4", [
                     new AvroNode("level1", null, false),
                     new AvroNode("level2", "level2_data", false)
                 ]);
@@ -290,8 +314,8 @@ describe("Avroizer", () => {
             });
 
             test("element 5 level 2", () => {
-                result = Avroizer.createAvroElement(level2AvroSchema, [], []);
-                expected = new AvroElement("field5", "boolean", true, null, [
+                result = Avroizer.getAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("field5", "boolean", true, false, null, [
                     new AvroNode("level1", null, false),
                     new AvroNode("level2", "level2_data", false)
                 ]);
@@ -300,13 +324,23 @@ describe("Avroizer", () => {
             });
 
             test("element 6 level 2", () => {
-                result = Avroizer.createAvroElement(level2AvroSchema, [], []);
-                expected = new AvroElement("field6", "int", true, null, [
+                result = Avroizer.getAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("field6", "int", true, false, null, [
                     new AvroNode("level1", null, false),
                     new AvroNode("level2", "level2_data", false)
                 ]);
 
                 expect(result[5]).toEqual(expected);
+            });
+
+            test("element 7 level 2", () => {
+                result = Avroizer.getAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("field7", "long", false, true, [], [
+                    new AvroNode("level1", null, false),
+                    new AvroNode("level2", "level2_data", false)
+                ]);
+
+                expect(result[6]).toEqual(expected);
             });
         });
     });

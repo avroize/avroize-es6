@@ -13,384 +13,154 @@ describe("avroSanitizer", () => {
             jest.resetAllMocks();
         });
 
-        describe("boolean", () => {
-            test("return value if boolean", () => {
-                utilities.isBoolean
-                    .mockReturnValueOnce(true);
+        test("getDefaultValueForAvroType from utilities", () => {
+            sanitize(avroTypes.DOUBLE, true, true, undefined);
 
-                result = sanitize(avroTypes.BOOLEAN, false, true);
-
-                expect(result).toBeTruthy();
-            });
-
-            test("return nullable value if boolean", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isBoolean
-                    .mockReturnValueOnce(true);
-                const avroValue = { boolean: true };
-
-                result = sanitize(avroTypes.BOOLEAN, true, avroValue);
-
-                expect(result).toEqual(avroValue);
-            });
-
-            test("getDefaultValueForAvroType from utilities if not boolean", () => {
-                utilities.isBoolean
-                    .mockReturnValueOnce(false);
-
-                sanitize(avroTypes.BOOLEAN, false, undefined);
-
-                expect(utilities.getDefaultValueForAvroType).toHaveBeenCalledWith(avroTypes.BOOLEAN);
-            });
-
-            test("return null if not valid nullable object", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce(false);
-
-                result = sanitize(avroTypes.BOOLEAN, true, undefined);
-
-                expect(result).toBeNull();
-            });
-
-            test("return null if not valid nullable boolean", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isBoolean
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
-
-                result = sanitize(avroTypes.BOOLEAN, true, {});
-
-                expect(result).toBeNull();
-            });
+            expect(utilities.getDefaultValueForAvroType)
+                .toHaveBeenCalledWith(avroTypes.DOUBLE, true, true);
         });
 
-        describe("double", () => {
-            test("return value if double", () => {
-                utilities.isDouble
-                    .mockReturnValueOnce(true);
+        test("return value if double", () => {
+            utilities.isValidPrimitive
+                .mockReturnValueOnce(true);
 
-                result = sanitize(avroTypes.DOUBLE, false, 1.0);
+            result = sanitize(avroTypes.DOUBLE, false, false, 1.0);
 
-                expect(result).toEqual(1.0);
-            });
-
-            test("return nullable value if double", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isDouble
-                    .mockReturnValueOnce(true);
-                const avroValue = { float: 1.0 };
-
-                result = sanitize(avroTypes.DOUBLE, true, avroValue);
-
-                expect(result).toEqual(avroValue);
-            });
-
-            test("getDefaultValueForAvroType from utilities if not double", () => {
-                utilities.isDouble
-                    .mockReturnValueOnce(false);
-
-                sanitize(avroTypes.DOUBLE, false, undefined);
-
-                expect(utilities.getDefaultValueForAvroType).toHaveBeenCalledWith(avroTypes.DOUBLE);
-            });
-
-            test("return default value if not double", () => {
-                utilities.isDouble
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce(0);
-
-                result = sanitize(avroTypes.DOUBLE, false, undefined);
-
-                expect(result).toEqual(0);
-            });
-
-            test("return null if not valid nullable object", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
-
-                result = sanitize(avroTypes.DOUBLE, true, undefined);
-
-                expect(result).toBeNull();
-            });
-
-            test("return null if not valid nullable double", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isDouble
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
-
-                result = sanitize(avroTypes.DOUBLE, true, {});
-
-                expect(result).toBeNull();
-            });
+            expect(result).toEqual(1.0);
         });
 
-        describe("float", () => {
-            test("return value if float", () => {
-                utilities.isFloat
-                    .mockReturnValueOnce(true);
+        test("return wrapped value if double", () => {
+            utilities.isObject
+                .mockReturnValueOnce(true);
+            utilities.isValidPrimitive
+                .mockReturnValueOnce(true);
+            const avroValue = { float: 1.0 };
 
-                result = sanitize(avroTypes.FLOAT, false, 1.0);
+            result = sanitize(avroTypes.DOUBLE, true, false, avroValue);
 
-                expect(result).toEqual(1.0);
-            });
-
-            test("return nullable value if float", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isFloat
-                    .mockReturnValueOnce(true);
-                const avroValue = { float: 1.0 };
-
-                result = sanitize(avroTypes.FLOAT, true, avroValue);
-
-                expect(result).toEqual(avroValue);
-            });
-
-            test("getDefaultValueForAvroType from utilities if not float", () => {
-                utilities.isFloat
-                    .mockReturnValueOnce(false);
-
-                sanitize(avroTypes.FLOAT, false, undefined);
-
-                expect(utilities.getDefaultValueForAvroType).toHaveBeenCalledWith(avroTypes.FLOAT);
-            });
-
-            test("return default value if not float", () => {
-                utilities.isFloat
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce(0);
-
-                result = sanitize(avroTypes.FLOAT, false, undefined);
-
-                expect(result).toEqual(0);
-            });
-
-            test("return null if not valid nullable object", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
-
-                result = sanitize(avroTypes.FLOAT, true, undefined);
-
-                expect(result).toBeNull();
-            });
-
-            test("return null if not valid nullable float", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isFloat
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
-
-                result = sanitize(avroTypes.FLOAT, true, {});
-
-                expect(result).toBeNull();
-            });
+            expect(result).toEqual(avroValue);
         });
 
-        describe("integer", () => {
-            test("return value if integer", () => {
-                utilities.isInteger
-                    .mockReturnValueOnce(true);
+        test("return default value if not double", () => {
+            utilities.isValidPrimitive
+                .mockReturnValueOnce(false);
+            utilities.getDefaultValueForAvroType
+                .mockReturnValueOnce(0);
 
-                result = sanitize(avroTypes.INTEGER, false, 1);
+            result = sanitize(avroTypes.DOUBLE, false, false, undefined);
 
-                expect(result).toEqual(1);
-            });
-
-            test("return nullable value if integer", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isInteger
-                    .mockReturnValueOnce(true);
-                const avroValue = { int: 1 };
-
-                result = sanitize(avroTypes.INTEGER, true, avroValue);
-
-                expect(result).toEqual(avroValue);
-            });
-
-            test("getDefaultValueForAvroType from utilities if not integer", () => {
-                utilities.isInteger
-                    .mockReturnValueOnce(false);
-
-                sanitize(avroTypes.INTEGER, false, undefined);
-
-                expect(utilities.getDefaultValueForAvroType).toHaveBeenCalledWith(avroTypes.INTEGER);
-            });
-
-            test("return default value if not integer", () => {
-                utilities.isInteger
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce(0);
-
-                result = sanitize(avroTypes.INTEGER, false, undefined);
-
-                expect(result).toEqual(0);
-            });
-
-            test("return null if not valid nullable object", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
-
-                result = sanitize(avroTypes.INTEGER, true, undefined);
-
-                expect(result).toBeNull();
-            });
-
-            test("return null if not valid nullable integer", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isInteger
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
-
-                result = sanitize(avroTypes.INTEGER, true, {});
-
-                expect(result).toBeNull();
-            });
+            expect(result).toEqual(0);
         });
 
-        describe("long", () => {
-            test("return value if long", () => {
-                utilities.isLong
-                    .mockReturnValueOnce(true);
+        test("return default if not valid wrapped object", () => {
+            utilities.isObject
+                .mockReturnValueOnce(false);
+            utilities.getDefaultValueForAvroType
+                .mockReturnValueOnce(null);
 
-                result = sanitize(avroTypes.LONG, false, 1);
+            result = sanitize(avroTypes.DOUBLE, true, false, undefined);
 
-                expect(result).toEqual(1);
-            });
-
-            test("return nullable value if long", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isLong
-                    .mockReturnValueOnce(true);
-                const avroValue = { long: 1 };
-
-                result = sanitize(avroTypes.LONG, true, avroValue);
-
-                expect(result).toEqual(avroValue);
-            });
-
-            test("getDefaultValueForAvroType from utilities if not long", () => {
-                utilities.isLong
-                    .mockReturnValueOnce(false);
-
-                sanitize(avroTypes.LONG, false, undefined);
-
-                expect(utilities.getDefaultValueForAvroType).toHaveBeenCalledWith(avroTypes.LONG);
-            });
-
-            test("return default value if not long", () => {
-                utilities.isLong
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce(0);
-
-                result = sanitize(avroTypes.LONG, false, undefined);
-
-                expect(result).toEqual(0);
-            });
-
-            test("return null if not valid nullable object", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
-
-                result = sanitize(avroTypes.LONG, true, undefined);
-
-                expect(result).toBeNull();
-            });
-
-            test("return null if not valid nullable long", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isLong
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
-
-                result = sanitize(avroTypes.LONG, true, {});
-
-                expect(result).toBeNull();
-            });
+            expect(result).toBeNull();
         });
 
-        describe("string", () => {
-            test("return value if string", () => {
-                utilities.isString
-                    .mockReturnValueOnce(true);
+        test("return default if not valid wrapped double", () => {
+            utilities.isObject
+                .mockReturnValueOnce(true);
+            utilities.isValidPrimitive
+                .mockReturnValueOnce(false);
+            utilities.getDefaultValueForAvroType
+                .mockReturnValueOnce(null);
 
-                result = sanitize(avroTypes.STRING, false, "1");
+            result = sanitize(avroTypes.DOUBLE, true, false, {});
 
-                expect(result).toEqual("1");
-            });
+            expect(result).toBeNull();
+        });
 
-            test("return nullable value if string", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isString
-                    .mockReturnValueOnce(true);
-                const avroValue = { string: "1" };
+        test("return array with item if item is valid", () => {
+            utilities.isArray
+                .mockReturnValueOnce(true);
+            utilities.isValidPrimitive
+                .mockReturnValueOnce(true);
 
-                result = sanitize(avroTypes.STRING, true, avroValue);
+            const array = [1.1];
+            result = sanitize(avroTypes.DOUBLE, false, true, array);
 
-                expect(result).toEqual(avroValue);
-            });
+            expect(result).toEqual(array);
+        });
 
-            test("getDefaultValueForAvroType from utilities if not string", () => {
-                utilities.isString
-                    .mockReturnValueOnce(false);
+        test("return default if item is not valid", () => {
+            utilities.isArray
+                .mockReturnValueOnce(true);
+            utilities.isValidPrimitive
+                .mockReturnValueOnce(false);
+            utilities.getDefaultValueForAvroType
+                .mockReturnValueOnce([]);
 
-                sanitize(avroTypes.STRING, false, undefined);
+            result = sanitize(avroTypes.DOUBLE, false, true, [undefined]);
 
-                expect(utilities.getDefaultValueForAvroType).toHaveBeenCalledWith(avroTypes.STRING);
-            });
+            expect(result).toEqual([]);
+        });
 
-            test("return null if not valid nullable object", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
+        test("return default if not array", () => {
+            utilities.isArray
+                .mockReturnValueOnce(false);
+            utilities.getDefaultValueForAvroType
+                .mockReturnValueOnce([]);
 
-                result = sanitize(avroTypes.STRING, true, undefined);
+            result = sanitize(avroTypes.DOUBLE, false, true, undefined);
 
-                expect(result).toBeNull();
-            });
+            expect(result).toEqual([]);
+        });
 
-            test("return null if not valid nullable string", () => {
-                utilities.isObject
-                    .mockReturnValueOnce(true);
-                utilities.isString
-                    .mockReturnValueOnce(false);
-                utilities.getDefaultValueForAvroType
-                    .mockReturnValueOnce("");
+        test("return wrapped array with item if item is valid", () => {
+            utilities.isObject
+                .mockReturnValueOnce(true);
+            utilities.isArray
+                .mockReturnValueOnce(true);
+            utilities.isValidPrimitive
+                .mockReturnValueOnce(true);
 
-                result = sanitize(avroTypes.STRING, true, {});
+            const array = { array: [1.1] };
+            result = sanitize(avroTypes.DOUBLE, true, true, array);
 
-                expect(result).toBeNull();
-            });
+            expect(result).toEqual(array);
+        });
+
+        test("return wrapped empty array if item is not valid", () => {
+            utilities.isObject
+                .mockReturnValueOnce(true);
+            utilities.isArray
+                .mockReturnValueOnce(true);
+            utilities.isValidPrimitive
+                .mockReturnValueOnce(false);
+
+            result = sanitize(avroTypes.DOUBLE, true, true, { array: [undefined] });
+
+            expect(result).toEqual({ array: [] });
+        });
+
+        test("return default if not a wrappable array", () => {
+            utilities.isObject
+                .mockReturnValueOnce(false);
+            utilities.getDefaultValueForAvroType
+                .mockReturnValueOnce(null);
+
+            result = sanitize(avroTypes.DOUBLE, true, true, undefined);
+
+            expect(result).toBeNull();
+        });
+
+        test("return default if not valid wrappable array", () => {
+            utilities.isObject
+                .mockReturnValueOnce(true);
+            utilities.isArray
+                .mockReturnValueOnce(false);
+            utilities.getDefaultValueForAvroType
+                .mockReturnValueOnce(null);
+
+            result = sanitize(avroTypes.DOUBLE, true, true, { array: undefined });
+
+            expect(result).toBeNull();
         });
     });
 });
