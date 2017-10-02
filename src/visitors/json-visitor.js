@@ -33,6 +33,9 @@ export default class JSONVisitor {
 
             if (utilities.isObject(data)) {
                 currentObject = data[currentParent.name];
+                if (currentParent.isNullable && utilities.isObject(currentObject)) {
+                    currentObject = currentObject[currentParent.dataNodeName];
+                }
 
                 if (utilities.isObject(currentObject) && parentNodes.length > 0) {
                     // keep looking for deepest node

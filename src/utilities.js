@@ -2,7 +2,7 @@
 import avroTypes from "./constants/avro-types";
 
 export function isDefined(value) {
-    return typeof value !== "undefined" && value !== null;
+    return typeof value !== "undefined";
 }
 
 export function isArray(value) {
@@ -22,7 +22,7 @@ export function isValidPrimitive(avroType, value) {
             break;
         case avroTypes.DOUBLE:
         case avroTypes.FLOAT:
-            isValid = typeof value === "number" && !Number.isInteger(value);
+            isValid = typeof value === "number";
             break;
         case avroTypes.INTEGER:
         case avroTypes.LONG:

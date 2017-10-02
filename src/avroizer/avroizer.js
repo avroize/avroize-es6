@@ -31,7 +31,7 @@ export default class Avroizer {
         let avroizedData = {};
 
         cleanAvroElements.forEach((avroElement) => {
-            if (utilities.isDefined(this.visitors)) {
+            if (this.visitors !== null) {
                 // each visitor will be applied in order
                 this.visitors.forEach((visitor) => {
                     avroElement.accept(visitor, data);
@@ -47,59 +47,112 @@ export default class Avroizer {
                 avroizedData[avroElement.name] = avroElement.value;
             } else {
                 let latestNode = avroizedData;
+                let latestData = data;
                 avroElement.parentNodes.forEach((parentNode) => {
-                    if (parentNode.dataNodeName !== null) {
-                        if (!utilities.isDefined(latestNode[parentNode.name])) {
-                            latestNode[parentNode.name] = {};
+                    if (parentNode.dataNodeName !== null && latestData !== null) {
+                        if (utilities.isDefined(latestData)) {
+                            if (utilities.isObject(latestData[parentNode.name]) || latestData[parentNode.name] === null) {
+                                latestData = latestData[parentNode.name];
+                                if (parentNode.isNullable && latestData !== null) {
+                                    latestData = latestData[parentNode.dataNodeName];
+                                }
+                            } else {
+                                latestData = undefined;
+                            }
                         }
-                        latestNode = latestNode[parentNode.name];
+
+                        if (!utilities.isDefined(latestNode[parentNode.name])) {
+                            if (parentNode.isNullable && (latestData === null || !utilities.isObject(latestData))) {
+                                // only nullable nodes can be nulled out
+                                // or nullable nodes that dont have data defined for them (null by default)
+                                latestNode[parentNode.name] = null;
+                                latestData = null;
+                            } else {
+                                latestNode[parentNode.name] = {};
+                            }
+                        }
+
+                        if (latestNode[parentNode.name] !== null) {
+                            if (parentNode.isNullable) {
+                                if (!utilities.isDefined(latestNode[parentNode.name][parentNode.dataNodeName])) {
+                                    latestNode[parentNode.name][parentNode.dataNodeName] = {};
+                                }
+                                latestNode = latestNode[parentNode.name][parentNode.dataNodeName];
+                            } else {
+                                latestNode = latestNode[parentNode.name];
+                            }
+                        } else {
+                            latestData = null;
+                        }
                     }
                 });
-                latestNode[avroElement.name] = avroElement.value;
+
+                if (latestData !== null) {
+                    latestNode[avroElement.name] = avroElement.value;
+                }
             }
         });
 
         return avroizedData;
     }
 
-    static getAvroElement(avroJSON, parentNodes, accumulator, nodeName) {
+    static getAvroElement(avroJSON, parentNodes, accumulator, nodeName, namespace) {
+        let avroElement, newParentNodes, parentNode;
+
         if (utilities.isObject(avroJSON.type)) {
             if (avroJSON.type.type === avroTypes.ARRAY) {
                 // is an array, assume primitive type for now
-                const avroElement = new AvroElement(avroJSON.name, avroJSON.type.items, false, true, avroJSON.default,
+                avroElement = new AvroElement(avroJSON.name, avroJSON.type.items, false, true, avroJSON.default,
                     parentNodes);
                 accumulator.push(avroElement);
                 return accumulator;
             } else {
-                // this is a record node with a data node
-                return Avroizer.getAvroElement(avroJSON.type, parentNodes, accumulator, avroJSON.name);
+                // this is a record node with a non-nullable data node
+                return Avroizer.getAvroElement(avroJSON.type, parentNodes, accumulator, avroJSON.name, namespace);
             }
         } else if (avroJSON.type === avroTypes.RECORD) {
-            let parentNode;
             if (utilities.isDefined(nodeName)) {
-                parentNode = new AvroNode(nodeName, avroJSON.name, false);
+                const dataNodeName = namespace + "." + avroJSON.name;
+                parentNode = new AvroNode(nodeName, dataNodeName, false);
             } else {
+                // this is the root node, grab the namespace from it
                 parentNode = new AvroNode(avroJSON.name, null, false);
+                namespace = avroJSON.namespace;
             }
 
-            const newParentNodes = parentNodes.concat([parentNode]);
+            newParentNodes = parentNodes.concat([parentNode]);
             avroJSON.fields.forEach((field) => {
-                Avroizer.getAvroElement(field, newParentNodes, accumulator);
+                Avroizer.getAvroElement(field, newParentNodes, accumulator, undefined, namespace);
             });
 
             return accumulator;
         } else {
-            let avroElement;
-
             if (utilities.isArray(avroJSON.type)) {
                 // for MVP, assume that anything that is an array is a union with a nullable type
                 // also assume first element is null, and the second element is the type
                 // safety checks later :)
 
-                const isArray = utilities.isObject(avroJSON.type[1]);
-                const type = isArray ? avroJSON.type[1].items : avroJSON.type[1];
-                avroElement = new AvroElement(avroJSON.name, type, true, isArray, avroJSON.default,
-                    parentNodes);
+                const unionType = avroJSON.type[1];
+                if (utilities.isObject(unionType)) {
+                    if (unionType.type === avroTypes.ARRAY) {
+                        avroElement = new AvroElement(avroJSON.name, unionType.items, true, true,
+                            avroJSON.default, parentNodes);
+                    } else {
+                        // this is a nullable data node
+                        const dataNodeName = namespace + "." + avroJSON.type[1].name;
+                        parentNode = new AvroNode(avroJSON.name, dataNodeName, true);
+
+                        newParentNodes = parentNodes.concat([parentNode]);
+                        avroJSON.type[1].fields.forEach((field) => {
+                            Avroizer.getAvroElement(field, newParentNodes, accumulator, undefined, namespace);
+                        });
+
+                        return accumulator;
+                    }
+                } else {
+                    avroElement = new AvroElement(avroJSON.name, unionType, true, false,
+                        avroJSON.default, parentNodes);
+                }
             } else {
                 avroElement = new AvroElement(avroJSON.name, avroJSON.type, false, false, avroJSON.default,
                     parentNodes);

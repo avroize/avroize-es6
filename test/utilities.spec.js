@@ -12,12 +12,6 @@ describe("utilities", () => {
             expect(result).toBeFalsy();
         });
 
-        test("return false if value is null", () => {
-            result = utilities.isDefined(null);
-
-            expect(result).toBeFalsy();
-        });
-
         test("return true if value is otherwise", () => {
             result = utilities.isDefined("value");
 
@@ -87,12 +81,6 @@ describe("utilities", () => {
                 expect(result).toBeTruthy();
             });
 
-            test("return false if value is integer", () => {
-                result = utilities.isValidPrimitive(avroTypes.DOUBLE, 3);
-
-                expect(result).toBeFalsy();
-            });
-
             test("return false if value is otherwise", () => {
                 result = utilities.isValidPrimitive(avroTypes.DOUBLE, undefined);
 
@@ -105,12 +93,6 @@ describe("utilities", () => {
                 result = utilities.isValidPrimitive(avroTypes.FLOAT, 3.1);
 
                 expect(result).toBeTruthy();
-            });
-
-            test("return false if value is integer", () => {
-                result = utilities.isValidPrimitive(avroTypes.FLOAT, 3);
-
-                expect(result).toBeFalsy();
             });
 
             test("return false if value is otherwise", () => {
