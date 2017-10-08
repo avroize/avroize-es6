@@ -46,6 +46,38 @@ const level1AvroSchema = {
             "type": avroTypes.ARRAY,
             "items": avroTypes.DOUBLE
         }]
+    },{
+        "default": [],
+        "name": "level1a",
+        "type": {
+            "default": [],
+            "type": avroTypes.ARRAY,
+            "items": {
+                "name": "level1a_data",
+                "type": avroTypes.RECORD,
+                "fields":[{
+                    "default": 1,
+                    "name": "field8",
+                    "type": avroTypes.INTEGER
+                }]
+            }
+        }
+    },{
+        "default": null,
+        "name": "level1b",
+        "type": ["null", {
+            "default": [],
+            "type": avroTypes.ARRAY,
+            "items": {
+                "name": "level1b_data",
+                "type": avroTypes.RECORD,
+                "fields":[{
+                    "default": 1,
+                    "name": "field9",
+                    "type": avroTypes.STRING
+                }]
+            }
+        }]
     }]
 };
 
@@ -89,6 +121,60 @@ const level2AvroSchema = {
                     "type": avroTypes.ARRAY,
                     "items": avroTypes.LONG
                 }
+            },{
+                "default": [],
+                "name": "level2a",
+                "type": {
+                    "default": [],
+                    "type": avroTypes.ARRAY,
+                    "items": {
+                        "name": "level2a_data",
+                        "type": avroTypes.RECORD,
+                        "fields":[{
+                            "default": 1,
+                            "name": "field8",
+                            "type": avroTypes.INTEGER
+                        },{
+                            "name": "level3a",
+                            "type": {
+                                "name": "level3a_data",
+                                "type": avroTypes.RECORD,
+                                "fields":[{
+                                    "default": true,
+                                    "name": "field10",
+                                    "type": avroTypes.BOOLEAN
+                                }]
+                            }
+                        }]
+                    }
+                }
+            },{
+                "default": null,
+                "name": "level2b",
+                "type": ["null", {
+                    "default": [],
+                    "type": avroTypes.ARRAY,
+                    "items": {
+                        "name": "level2b_data",
+                        "type": avroTypes.RECORD,
+                        "fields":[{
+                            "default": 1,
+                            "name": "field9",
+                            "type": avroTypes.STRING
+                        }, {
+                            "name": "level3b",
+                            "type": [null, {
+                                "name": "level3b_data",
+                                "type": avroTypes.RECORD,
+                                "fields":[{
+                                    "default": "11",
+                                    "name": "field11",
+                                    "type": avroTypes.STRING
+                                }]
+                            }]
+                        }]
+                    }
+                }]
             }]
         }
     }]
@@ -134,6 +220,60 @@ const level2NullableAvroSchema = {
                     "type": avroTypes.ARRAY,
                     "items": avroTypes.LONG
                 }
+            },{
+                "default": [],
+                "name": "level2a",
+                "type": {
+                    "default": [],
+                    "type": avroTypes.ARRAY,
+                    "items": {
+                        "name": "level2a_data",
+                        "type": avroTypes.RECORD,
+                        "fields":[{
+                            "default": 1,
+                            "name": "field8",
+                            "type": avroTypes.INTEGER
+                        },{
+                            "name": "level3a",
+                            "type": {
+                                "name": "level3a_data",
+                                "type": avroTypes.RECORD,
+                                "fields":[{
+                                    "default": true,
+                                    "name": "field10",
+                                    "type": avroTypes.BOOLEAN
+                                }]
+                            }
+                        }]
+                    }
+                }
+            },{
+                "default": null,
+                "name": "level2b",
+                "type": ["null", {
+                    "default": [],
+                    "type": avroTypes.ARRAY,
+                    "items": {
+                        "name": "level2b_data",
+                        "type": avroTypes.RECORD,
+                        "fields":[{
+                            "default": 1,
+                            "name": "field9",
+                            "type": avroTypes.STRING
+                        }, {
+                            "name": "level3b",
+                            "type": [null, {
+                                "name": "level3b_data",
+                                "type": avroTypes.RECORD,
+                                "fields":[{
+                                    "default": "11",
+                                    "name": "field11",
+                                    "type": avroTypes.STRING
+                                }]
+                            }]
+                        }]
+                    }
+                }]
             }]
         }]
     }]
@@ -208,7 +348,9 @@ describe("Avroizer", () => {
                     field4: null,
                     field5: 0,
                     field6: 0,
-                    field7: null
+                    field7: null,
+                    level1a: [],
+                    level1b: null
                 };
 
                 expect(result).toEqual(expected);
@@ -228,7 +370,9 @@ describe("Avroizer", () => {
                         field4: "",
                         field5: null,
                         field6: null,
-                        field7: []
+                        field7: [],
+                        level2a: [],
+                        level2b: null
                     }
                 };
 
@@ -272,7 +416,7 @@ describe("Avroizer", () => {
             test("expected number of elements", () => {
                 result = Avroizer.getAvroElement(level1AvroSchema, [], []);
 
-                expect(result).toHaveLength(7);
+                expect(result).toHaveLength(9);
             });
 
             test("element 1 level 1", () => {
@@ -330,13 +474,37 @@ describe("Avroizer", () => {
 
                 expect(result[6]).toEqual(expected);
             });
+
+            test("element 8 level 1a", () => {
+                result = Avroizer.getAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("level1a", "array", false, true, [], [
+                    new AvroNode("level1", null, false)], [
+                        new AvroElement("field8", "int", false, false, 1, [
+                            new AvroNode("level1a_data", null, false)
+                        ])
+                ]);
+
+                expect(result[7]).toEqual(expected);
+            });
+
+            test("element 9 level 1b", () => {
+                result = Avroizer.getAvroElement(level1AvroSchema, [], []);
+                expected = new AvroElement("level1b", "array", true, true, null, [
+                    new AvroNode("level1", null, false)], [
+                    new AvroElement("field9", "string", false, false, 1, [
+                        new AvroNode("level1b_data", null, false)
+                    ])
+                ]);
+
+                expect(result[8]).toEqual(expected);
+            });
         });
 
         describe("multi-level nesting", () => {
             test("expected number of elements", () => {
                 result = Avroizer.getAvroElement(level2AvroSchema, [], []);
 
-                expect(result).toHaveLength(7);
+                expect(result).toHaveLength(9);
             });
 
             test("element 1 level 1", () => {
@@ -403,6 +571,40 @@ describe("Avroizer", () => {
                 ]);
 
                 expect(result[6]).toEqual(expected);
+            });
+
+            test("element 8 level 2a", () => {
+                result = Avroizer.getAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("level2a", "array", false, true, [], [
+                    new AvroNode("level1", null, false),
+                    new AvroNode("level2", "avro.test.level2_data", false)
+                ], [
+                    new AvroElement("field8", "int", false, false, 1, [
+                        new AvroNode("level2a_data", null, false)
+                    ]), new AvroElement("field10", "boolean", false, false, true, [
+                        new AvroNode("level2a_data", null, false),
+                        new AvroNode("level3a", "avro.test.level3a_data", false)
+                    ])
+                ]);
+
+                expect(result[7]).toEqual(expected);
+            });
+
+            test("element 9 level 2b", () => {
+                result = Avroizer.getAvroElement(level2AvroSchema, [], []);
+                expected = new AvroElement("level2b", "array", true, true, null, [
+                    new AvroNode("level1", null, false),
+                    new AvroNode("level2", "avro.test.level2_data", false)
+                ], [
+                    new AvroElement("field9", "string", false, false, 1, [
+                        new AvroNode("level2b_data", null, false)
+                    ]), new AvroElement("field11", "string", false, false, "11", [
+                        new AvroNode("level2b_data", null, false),
+                        new AvroNode("level3b", "avro.test.level3b_data", true)
+                    ])
+                ]);
+
+                expect(result[8]).toEqual(expected);
             });
         });
 
@@ -410,7 +612,7 @@ describe("Avroizer", () => {
             test("expected number of elements", () => {
                 result = Avroizer.getAvroElement(level2NullableAvroSchema, [], []);
 
-                expect(result).toHaveLength(7);
+                expect(result).toHaveLength(9);
             });
 
             test("element 1 level 1", () => {
@@ -477,6 +679,40 @@ describe("Avroizer", () => {
                 ]);
 
                 expect(result[6]).toEqual(expected);
+            });
+
+            test("element 8 level 2a", () => {
+                result = Avroizer.getAvroElement(level2NullableAvroSchema, [], []);
+                expected = new AvroElement("level2a", "array", false, true, [], [
+                    new AvroNode("level1", null, false),
+                    new AvroNode("level2", "avro.test.level2_data", true)
+                ], [
+                    new AvroElement("field8", "int", false, false, 1, [
+                        new AvroNode("level2a_data", null, false)
+                    ]), new AvroElement("field10", "boolean", false, false, true, [
+                        new AvroNode("level2a_data", null, false),
+                        new AvroNode("level3a", "avro.test.level3a_data", false)
+                    ])
+                ]);
+
+                expect(result[7]).toEqual(expected);
+            });
+
+            test("element 9 level 2b", () => {
+                result = Avroizer.getAvroElement(level2NullableAvroSchema, [], []);
+                expected = new AvroElement("level2b", "array", true, true, null, [
+                    new AvroNode("level1", null, false),
+                    new AvroNode("level2", "avro.test.level2_data", true)
+                ], [
+                    new AvroElement("field9", "string", false, false, 1, [
+                        new AvroNode("level2b_data", null, false)
+                    ]), new AvroElement("field11", "string", false, false, "11", [
+                        new AvroNode("level2b_data", null, false),
+                        new AvroNode("level3b", "avro.test.level3b_data", true)
+                    ])
+                ]);
+
+                expect(result[8]).toEqual(expected);
             });
         });
     });
