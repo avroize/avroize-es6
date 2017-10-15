@@ -4,7 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/avroize/avroize-es6/badge.svg)](https://coveralls.io/github/avroize/avroize-es6) 
 [![npm version](https://img.shields.io/npm/v/avroize-es6.svg?style=flat)](https://www.npmjs.com/package/avroize-es6)
 
-Avroize transforms data into valid Avro JSON regardless of its correctness for a given Avro schema.
+Transform your data into valid Avro JSON for any given Avro schema.
 
 ### Support for MVP release:
 * Primitive types: *Boolean, Double, Float, Integer, Long, String*
@@ -39,7 +39,7 @@ const avroSchema = {
     }]
 };
 
-const avroizer = new JSONAvroizer(avroSchema);
+const avroizer = getJSONAvroizer(avroSchema);
 
 const result = avroizer.avroize({"field1":"test"});
 
