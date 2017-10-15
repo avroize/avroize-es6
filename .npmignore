@@ -1,5 +1,6 @@
 /.idea
 /coverage
+/integration-tests
 /src
 /test
 
@@ -11,5 +12,6 @@
 .jshintrc
 .npmignore
 .nvmrc
-linters_entry_point.sh
-test_entry_point.sh
+.travis.yml
+lint.sh
+test.sh
