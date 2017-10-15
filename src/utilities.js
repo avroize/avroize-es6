@@ -1,4 +1,3 @@
-
 import avroTypes from "./constants/avro-types";
 
 export function isDefined(value) {
@@ -10,7 +9,7 @@ export function isArray(value) {
 }
 
 export function isObject(value) {
-    return value !== null && !this.isArray(value) && typeof value === "object";
+    return value !== null && !isArray(value) && typeof value === "object";
 }
 
 export function isValidPrimitive(avroType, value) {

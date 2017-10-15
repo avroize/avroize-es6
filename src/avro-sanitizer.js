@@ -1,31 +1,30 @@
-
 import avroTypes from "./constants/avro-types";
-import * as utilities from "./utilities";
+import {getDefaultValueForAvroType, isArray as utilIsArray, isObject, isValidPrimitive} from "./utilities";
 
 export default function sanitize(avroType, isNullable, isArray, value) {
-    let result = utilities.getDefaultValueForAvroType(avroType, isNullable, isArray);
+    let result = getDefaultValueForAvroType(avroType, isNullable, isArray);
 
     if (isArray) {
         if (isNullable) {
-            if (utilities.isObject(value) && utilities.isArray(value[avroTypes.ARRAY])) {
+            if (isObject(value) && utilIsArray(value[avroTypes.ARRAY])) {
                 const santizedArray = value[avroTypes.ARRAY].filter((item) => {
-                    return utilities.isValidPrimitive(avroType, item);
+                    return isValidPrimitive(avroType, item);
                 });
                 result = {};
                 result[avroTypes.ARRAY] = santizedArray;
             }
         } else {
-            if (utilities.isArray(value)) {
+            if (utilIsArray(value)) {
                 result = value.filter((item) => {
-                    return utilities.isValidPrimitive(avroType, item);
+                    return isValidPrimitive(avroType, item);
                 });
             }
         }
     } else if (isNullable) {
-        if (utilities.isObject(value) && utilities.isValidPrimitive(avroType, value[avroType])) {
+        if (isObject(value) && isValidPrimitive(avroType, value[avroType])) {
             result = value;
         }
-    } else if (utilities.isValidPrimitive(avroType, value)) {
+    } else if (isValidPrimitive(avroType, value)) {
         result = value;
     }
 

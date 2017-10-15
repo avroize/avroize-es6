@@ -1,4 +1,3 @@
-
 jest.mock("../../src/utilities");
 
 import AvroElement from "../../src/avro-objects/avro-element";

@@ -1,4 +1,3 @@
-
 jest.mock("../../src/avro-sanitizer");
 
 import JSONVisitor from "../../src/visitors/json-visitor";

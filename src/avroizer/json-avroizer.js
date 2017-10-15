@@ -1,4 +1,3 @@
-
 import Avroizer from "./avroizer";
 import JSONVisitor from "../visitors/json-visitor";
 

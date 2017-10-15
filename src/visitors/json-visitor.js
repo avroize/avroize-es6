@@ -1,13 +1,11 @@
-
 import sanitize from "../avro-sanitizer";
-import * as utilities from "../utilities";
+import {isDefined, isObject} from "../utilities";
 import avroTypes from "../constants/avro-types";
 
 export default class JSONVisitor {
     visit(avroElement, data) {
         if (avroElement.dataType !== avroTypes.RECORD) {
             if (avroElement.parentNodes.length === 0) {
-                // this is a single field schema
                 avroElement._value = sanitize(avroElement.dataType, avroElement.isNullable,
                     avroElement.isArray, data);
             } else {
@@ -15,7 +13,7 @@ export default class JSONVisitor {
                 const parentNodes = avroElement.parentNodes.slice(1, avroElement.parentNodes.length);
 
                 const currentObject = JSONVisitor.getCurrentObject(parentNodes, data);
-                if (utilities.isObject(currentObject) && utilities.isDefined(currentObject[avroElement.name])) {
+                if (isObject(currentObject) && isDefined(currentObject[avroElement.name])) {
                     avroElement._value = sanitize(avroElement.dataType, avroElement.isNullable,
                         avroElement.isArray, currentObject[avroElement.name]);
                 }
@@ -31,14 +29,13 @@ export default class JSONVisitor {
         } else {
             currentParent = parentNodes.shift();
 
-            if (utilities.isObject(data)) {
+            if (isObject(data)) {
                 currentObject = data[currentParent.name];
-                if (currentParent.isNullable && utilities.isObject(currentObject)) {
+                if (currentParent.isNullable && isObject(currentObject)) {
                     currentObject = currentObject[currentParent.dataNodeName];
                 }
 
-                if (utilities.isObject(currentObject) && parentNodes.length > 0) {
-                    // keep looking for deepest node
+                if (isObject(currentObject) && parentNodes.length > 0) {
                     currentObject = JSONVisitor.getCurrentObject(parentNodes, currentObject);
                 }
             }

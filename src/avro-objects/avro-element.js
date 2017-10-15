@@ -1,4 +1,3 @@
-
 import {getDefaultValueForAvroType} from "../utilities";
 
 export default class AvroElement {

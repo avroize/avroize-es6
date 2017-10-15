@@ -1,4 +1,3 @@
-
 export default {
     ARRAY: "array",
     BOOLEAN: "boolean",

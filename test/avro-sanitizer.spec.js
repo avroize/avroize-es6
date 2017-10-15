@@ -1,4 +1,3 @@
-
 jest.mock("../src/utilities");
 
 import sanitize from "../src/avro-sanitizer";

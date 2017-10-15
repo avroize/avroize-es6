@@ -1,4 +1,3 @@
-
 export default class AvroNode {
     constructor(name, dataNodeName, isNullable) {
         this._name = name;

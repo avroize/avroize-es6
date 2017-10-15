@@ -1,4 +1,3 @@
-
 import _ from "lodash";
 import AvroElement from "../../src/avro-objects/avro-element";
 import AvroNode from "../../src/avro-objects/avro-node";
