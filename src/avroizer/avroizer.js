@@ -47,32 +47,39 @@ export default class Avroizer {
                 let latestNode = avroizedData;
                 let latestData = data;
                 avroElement.parentNodes.forEach((parentNode) => {
+                    // looking to get the right node object and data object
                     if (parentNode.dataNodeName !== null && latestData !== null) {
-                        if (isDefined(latestData)) {
-                            if (isObject(latestData[parentNode.name]) || latestData[parentNode.name] === null) {
-                                latestData = latestData[parentNode.name];
-                                if (parentNode.isNullable && latestData !== null) {
-                                    latestData = latestData[parentNode.dataNodeName];
+                        // get the right data first
+                        if (isObject(latestData)) {
+                            if (isObject(latestData[parentNode.name])) {
+                                if (parentNode.isNullable) {
+                                    latestData = latestData[parentNode.name][parentNode.dataNodeName];
+                                } else {
+                                    latestData = latestData[parentNode.name];
                                 }
                             } else {
                                 latestData = undefined;
                             }
                         }
 
+                        // initialize the node here if not created yet
                         if (!isDefined(latestNode[parentNode.name])) {
-                            if (parentNode.isNullable && (latestData === null || !isObject(latestData))) {
-                                latestNode[parentNode.name] = null;
-                                latestData = null;
+                            if (parentNode.isNullable) {
+                                if (isObject(latestData)) {
+                                    latestNode[parentNode.name] = {};
+                                    latestNode[parentNode.name][parentNode.dataNodeName] = {};
+                                } else {
+                                    latestNode[parentNode.name] = null;
+                                    latestData = null;
+                                }
                             } else {
                                 latestNode[parentNode.name] = {};
                             }
                         }
 
-                        if (latestNode[parentNode.name] !== null) {
+                        // descend into the node if it exists
+                        if (isObject(latestNode[parentNode.name])) {
                             if (parentNode.isNullable) {
-                                if (!isDefined(latestNode[parentNode.name][parentNode.dataNodeName])) {
-                                    latestNode[parentNode.name][parentNode.dataNodeName] = {};
-                                }
                                 latestNode = latestNode[parentNode.name][parentNode.dataNodeName];
                             } else {
                                 latestNode = latestNode[parentNode.name];
@@ -99,9 +106,9 @@ export default class Avroizer {
     getArrayRecords(avroElement, data) {
         let arrayElement, avroizedRecords, result;
 
-        if (isDefined(data)) {
+        if (isObject(data)) {
             if (avroElement.isNullable) {
-                if (isDefined(data[avroElement.name])) {
+                if (isObject(data[avroElement.name])) {
                     arrayElement = data[avroElement.name][avroTypes.ARRAY];
                 }
             } else {
@@ -110,27 +117,22 @@ export default class Avroizer {
         }
 
         if (isArray(arrayElement)) {
-            avroizedRecords = [];
-
-            const recordElements = arrayElement.filter((record) => {
+            avroizedRecords = arrayElement.filter((record) => {
                 return isObject(record);
-            });
-
-            recordElements.forEach((record) => {
-                const avroizedRecord = this.avroizeElements(record, avroElement.arrayElements);
-                avroizedRecords.push(avroizedRecord);
+            }).map((record) => {
+                return this.avroizeElements(record, avroElement.arrayElements);
             });
         }
 
         if (avroElement.isNullable) {
-            if (isDefined(avroizedRecords)) {
+            if (isArray(avroizedRecords)) {
                 result = {};
                 result[avroTypes.ARRAY] = avroizedRecords;
             } else {
                 result = null;
             }
         } else {
-            if (isDefined(avroizedRecords)) {
+            if (isArray(avroizedRecords)) {
                 result = avroizedRecords;
             } else {
                 result = [];
@@ -140,27 +142,30 @@ export default class Avroizer {
         return result;
     }
 
-    static getAvroElement(avroJSON, parentNodes, accumulator, nodeName, namespace) {
-        let avroElement, newParentNodes, parentNode;
+    static addAvroElementToAccumulator(accumulator, name, dataType, isNullable, isArray, defaultValue,
+                                       parentNodes, arrayElements) {
+        const avroElement = new AvroElement(name, dataType, isNullable, isArray, defaultValue,
+            parentNodes, arrayElements);
+        accumulator.push(avroElement);
+    }
 
+    static getAvroElement(avroJSON, parentNodes, accumulator, nodeName, namespace) {
         if (isObject(avroJSON.type)) {
             if (avroJSON.type.type === avroTypes.ARRAY) {
                 if (isObject(avroJSON.type.items)) {
                     const arrayElements = Avroizer.getAvroElement(avroJSON.type.items, [], [], undefined, namespace);
-                    avroElement = new AvroElement(avroJSON.name, avroJSON.type.type, false, true, avroJSON.default,
-                        parentNodes, arrayElements);
-                    accumulator.push(avroElement);
-                    return accumulator;
+                    Avroizer.addAvroElementToAccumulator(accumulator, avroJSON.name, avroJSON.type.type, false,
+                        true, avroJSON.default, parentNodes, arrayElements);
                 } else {
-                    avroElement = new AvroElement(avroJSON.name, avroJSON.type.items, false, true, avroJSON.default,
-                        parentNodes);
-                    accumulator.push(avroElement);
-                    return accumulator;
+                    Avroizer.addAvroElementToAccumulator(accumulator, avroJSON.name, avroJSON.type.items, false,
+                        true, avroJSON.default, parentNodes);
                 }
             } else {
                 return Avroizer.getAvroElement(avroJSON.type, parentNodes, accumulator, avroJSON.name, namespace);
             }
         } else if (avroJSON.type === avroTypes.RECORD) {
+            let parentNode;
+
             if (isDefined(nodeName)) {
                 const dataNodeName = namespace + "." + avroJSON.name;
                 parentNode = new AvroNode(nodeName, dataNodeName, false);
@@ -171,7 +176,7 @@ export default class Avroizer {
                 parentNode = new AvroNode(avroJSON.name, null, false);
             }
 
-            newParentNodes = parentNodes.concat([parentNode]);
+            const newParentNodes = parentNodes.concat([parentNode]);
             avroJSON.fields.forEach((field) => {
                 Avroizer.getAvroElement(field, newParentNodes, accumulator, undefined, namespace);
             });
@@ -184,17 +189,17 @@ export default class Avroizer {
                     if (unionType.type === avroTypes.ARRAY) {
                         if (isObject(unionType.items)) {
                             const arrayElements = Avroizer.getAvroElement(unionType.items, [], [], undefined, namespace);
-                            avroElement = new AvroElement(avroJSON.name, unionType.type, true, true, avroJSON.default,
-                                parentNodes, arrayElements);
+                            Avroizer.addAvroElementToAccumulator(accumulator, avroJSON.name, unionType.type, true,
+                                true, avroJSON.default, parentNodes, arrayElements);
                         } else {
-                            avroElement = new AvroElement(avroJSON.name, unionType.items, true, true,
-                                avroJSON.default, parentNodes);
+                            Avroizer.addAvroElementToAccumulator(accumulator, avroJSON.name, unionType.items, true,
+                                true, avroJSON.default, parentNodes);
                         }
                     } else {
                         const dataNodeName = namespace + "." + avroJSON.type[1].name;
-                        parentNode = new AvroNode(avroJSON.name, dataNodeName, true);
+                        const parentNode = new AvroNode(avroJSON.name, dataNodeName, true);
 
-                        newParentNodes = parentNodes.concat([parentNode]);
+                        const newParentNodes = parentNodes.concat([parentNode]);
                         avroJSON.type[1].fields.forEach((field) => {
                             Avroizer.getAvroElement(field, newParentNodes, accumulator, undefined, namespace);
                         });
@@ -202,15 +207,14 @@ export default class Avroizer {
                         return accumulator;
                     }
                 } else {
-                    avroElement = new AvroElement(avroJSON.name, unionType, true, false,
+                    Avroizer.addAvroElementToAccumulator(accumulator, avroJSON.name, unionType, true, false,
                         avroJSON.default, parentNodes);
                 }
             } else {
-                avroElement = new AvroElement(avroJSON.name, avroJSON.type, false, false, avroJSON.default,
-                    parentNodes);
+                Avroizer.addAvroElementToAccumulator(accumulator, avroJSON.name, avroJSON.type, false, false,
+                    avroJSON.default, parentNodes);
             }
 
-            accumulator.push(avroElement);
             return accumulator;
         }
     }
